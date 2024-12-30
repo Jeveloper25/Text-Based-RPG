@@ -5,15 +5,17 @@
 class entity
 {
 protected:
-    std::string id;
-    int health;
-    int attack;
+    std::string id{};
+    int health{};
+    int attack{};
+    float defense{};
     bool alive = true;
-    float defense;
 
 public:
-    // entity();
-    // ~entity();
+    entity(std::string id, int health, int attack, float defense)
+        : id{id}, health{health}, attack{attack}, defense{defense}
+    {
+    }
     int getHealth();
     void subHealth(int damage);
     bool isAlive();
@@ -28,7 +30,8 @@ protected:
     bool isGuard = false;
 
 public:
-    player(int health, int attack, float defense, std::string id = "P1");
+    player(int health, int attack, float defense, std::string id = "P1")
+        : entity(id, health, attack, defense) {}
     float getDefense();
     bool stateGuard();
     void changeGuard();

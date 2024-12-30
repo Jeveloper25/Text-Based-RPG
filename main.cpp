@@ -12,12 +12,12 @@ int main()
 {
     ostringstream stream;
 
-    player *p1 = new player(100, 60, 0.3);
-    mage *m1 = new mage(50, 30, 0.1, 1);
-    mage *m2 = new mage(50, 30, 0.1, 2);
-    knight *k1 = new knight(75, 20, 0.3, 1);
-    vector<entity *> enemies({m1, m2, k1});
-    entity *target;
+    unique_ptr<player> p1 = make_unique<player>(100, 60, 0.3);
+    vector<unique_ptr<entity>> enemies;
+    enemies.emplace_back(make_unique<mage>(50, 30, 0.1, 1));
+    enemies.emplace_back(make_unique<mage>(50, 30, 0.1, 2));
+    enemies.emplace_back(make_unique<knight>(75, 20, 0.3, 1));
+    unique_ptr<entity> *target;
     int damage;
 
     int turn = 0;
@@ -25,7 +25,7 @@ int main()
 
     while (p1->isAlive() && !(enemies.empty()))
     {
-        printInfo(p1, enemies, turn);
+        printInfo(*p1, enemies, turn);
         if (turn % 2 == 0)
         {
             if (p1->stateGuard())
@@ -37,12 +37,12 @@ int main()
             if (option == 'A')
             {
                 target = getTarget(enemies);
-                damage = attackTarget(target, p1);
+                damage = attackTarget(**target, *p1);
                 stream << "You dealt " << damage << "damage!\n";
                 printStream(stream);
-                if (!target->isAlive())
+                if (!(*target)->isAlive())
                 {
-                    killTarget(target, enemies);
+                    killTarget(**target, enemies);
                 }
             }
             else if (option == 'G')
@@ -54,9 +54,9 @@ int main()
         }
         else
         {
-            for (entity *en : enemies)
+            for (unique_ptr<entity> &en : enemies)
             {
-                damage = attackTarget(p1, en);
+                damage = attackTarget(*p1, *en);
                 stream << en->getID() << " dealt " << damage << "damage!\n";
                 printStream(stream);
             }

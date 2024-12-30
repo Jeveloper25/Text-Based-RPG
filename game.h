@@ -2,6 +2,7 @@
 #define GAME_H
 #include <string>
 #include <vector>
+#include <memory>
 #include "entities.h"
 
 using namespace std;
@@ -13,15 +14,15 @@ void printStream(ostringstream &stream);
 void getSingleInput(int &input);
 void getSingleInput(char &input);
 
-int calcDamage(int raw, entity *target);
+int calcDamage(int raw, entity &target);
 
-entity *getTarget(vector<entity *> &enemies);
+unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies);
 
-void printInfo(entity *player, vector<entity *> &enemies, int turn);
+void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn);
 
-int attackTarget(entity *target, entity *attacker);
+int attackTarget(entity &target, entity &attacker);
 
-void killTarget(entity *target, vector<entity *> &enemies);
+void killTarget(entity &target, vector<unique_ptr<entity>> &enemies);
 
 char optionMenu();
 

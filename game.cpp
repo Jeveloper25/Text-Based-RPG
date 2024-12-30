@@ -39,18 +39,18 @@ void getSingleInput(char &input)
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-int calcDamage(int raw, entity *target)
+int calcDamage(int raw, entity &target)
 {
-    return (raw * (1 - target->getDefense()));
+    return (raw * (1 - target.getDefense()));
 }
 
-entity *getTarget(vector<entity *> &enemies)
+unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies)
 {
     ostringstream stream;
     int input;
     int count = 1;
     stream << "Select a target:\n";
-    for (entity *en : enemies)
+    for (unique_ptr<entity> &en : enemies)
     {
         stream << "(" << count << ") " << en->getID() << "\n";
         count++;
@@ -66,10 +66,10 @@ entity *getTarget(vector<entity *> &enemies)
             getSingleInput(input);
         }
     } while (input < 0 || input > (int)enemies.size());
-    return enemies[input - 1];
+    return &enemies[input - 1];
 }
 
-void printInfo(entity *player, vector<entity *> &enemies, int turn)
+void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
 {
     ostringstream stream;
     if (turn % 2 == 0)
@@ -80,33 +80,33 @@ void printInfo(entity *player, vector<entity *> &enemies, int turn)
     {
         stream << "Enemy's turn\n";
     }
-    stream << "HEALTH Player: " << player->getHealth() << "\n";
-    for (entity *en : enemies)
+    stream << "HEALTH Player: " << player.getHealth() << "\n";
+    for (unique_ptr<entity> &en : enemies)
     {
         stream << "HEALTH " << en->getID() << ": " << en->getHealth() << "\n";
     }
     printStream(stream);
 }
 
-int attackTarget(entity *target, entity *attacker)
+int attackTarget(entity &target, entity &attacker)
 {
-    int damage = calcDamage(attacker->getAttack(), target);
-    target->subHealth(damage);
+    int damage = calcDamage(attacker.getAttack(), target);
+    target.subHealth(damage);
     return damage;
 }
 
-void killTarget(entity *target, vector<entity *> &enemies)
+void killTarget(entity &target, vector<unique_ptr<entity>> &enemies)
 {
     ostringstream stream;
     for (auto en = enemies.begin(); en != enemies.end(); en++)
     {
-        if (target->getID() == (*en)->getID())
+        if (target.getID() == (*en)->getID())
         {
             enemies.erase(en);
             break;
         }
     }
-    stream << target->getID() << " has died!\n";
+    stream << target.getID() << " has died!\n";
     printStream(stream);
 }
 
