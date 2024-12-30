@@ -12,16 +12,30 @@ int main()
 {
     ostringstream stream;
 
-    unique_ptr<player> p1 = make_unique<player>(100, 60, 0.3);
+    unique_ptr<player> p1 = make_unique<player>(100, 60);
     vector<unique_ptr<entity>> enemies;
-    enemies.emplace_back(make_unique<mage>(50, 30, 0.1, 1));
-    enemies.emplace_back(make_unique<mage>(50, 30, 0.1, 2));
-    enemies.emplace_back(make_unique<knight>(75, 20, 0.3, 1));
+    enemies.emplace_back(make_unique<mage>(50, 30, 1));
+    enemies.emplace_back(make_unique<archer>(50, 30, 1));
+    enemies.emplace_back(make_unique<knight>(75, 20, 1));
     unique_ptr<entity> *target;
     int damage;
 
     int turn = 0;
     char option;
+
+    // unordered_map<string, float> resists = p1->getResistances();
+    // cout << "\n"
+    //      << p1->getID() << "\n"
+    //      << "Slash: " << resists.at("Slash") << " Pierce: " << resists.at("Pierce") << " Magic: " << resists.at("Magic") << "\n"
+    //      << "Self Damage: " << calcDamage(50, "Magic", *p1) << endl;
+    // for (unique_ptr<entity> &en : enemies)
+    // {
+    //     unordered_map<string, float> resist = (*en).getResistances();
+    //     cout << "\n"
+    //          << (*en).getID() << "\n"
+    //          << "Slash: " << resist.at("Slash") << " Pierce: " << resist.at("Pierce") << " Magic: " << resist.at("Magic") << "\n"
+    //          << "Self Damage: " << calcDamage(50, "Magic", *en) << endl;
+    // }
 
     while (p1->isAlive() && !(enemies.empty()))
     {

@@ -4,12 +4,15 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include "entities.h"
 #include "game.h"
 
 #define TEXTDELAY 15
 
 using namespace std;
+
+// DISPLAY FUNCTIONS
 
 void printTextByCharacter(const std::string &text, int delay_ms)
 {
@@ -39,9 +42,35 @@ void getSingleInput(char &input)
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-int calcDamage(int raw, entity &target)
+char optionMenu()
 {
-    return (raw * (1 - target.getDefense()));
+    ostringstream stream;
+    vector<char> options = {'A', 'G'};
+    char option;
+    stream << "What would you like to do?\nATTACK(A)\nGUARD(G)\n";
+    printStream(stream);
+    getSingleInput(option);
+    option = (char)toupper(option);
+    do
+    {
+        if (find(options.begin(), options.end(), option) == options.end())
+        {
+            stream << "Invalid input\n";
+            printStream(stream);
+            getSingleInput(option);
+            option = (char)toupper(option);
+        }
+    } while (find(options.begin(), options.end(), option) == options.end());
+
+    return option;
+}
+
+// COMBAT FUNCTIONS
+
+int calcDamage(int raw, const string &dType, entity &target)
+{
+    unordered_map<string, float> resistances = target.getResistances();
+    return raw * (1 - resistances.at(dType));
 }
 
 unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies)
@@ -74,13 +103,13 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
     ostringstream stream;
     if (turn % 2 == 0)
     {
-        stream << "Player's turn\n";
+        stream << "PLAYER's turn\n";
     }
     else
     {
-        stream << "Enemy's turn\n";
+        stream << "ENEMY's turn\n";
     }
-    stream << "HEALTH Player: " << player.getHealth() << "\n";
+    stream << "HEALTH PLAYER: " << player.getHealth() << "\n";
     for (unique_ptr<entity> &en : enemies)
     {
         stream << "HEALTH " << en->getID() << ": " << en->getHealth() << "\n";
@@ -90,7 +119,7 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
 
 int attackTarget(entity &target, entity &attacker)
 {
-    int damage = calcDamage(attacker.getAttack(), target);
+    int damage = calcDamage(attacker.getAttack(), attacker.getdamageType(), target);
     target.subHealth(damage);
     return damage;
 }
@@ -102,33 +131,11 @@ void killTarget(entity &target, vector<unique_ptr<entity>> &enemies)
     {
         if (target.getID() == (*en)->getID())
         {
+            en.base()->reset();
             enemies.erase(en);
             break;
         }
     }
     stream << target.getID() << " has died!\n";
     printStream(stream);
-}
-
-char optionMenu()
-{
-    ostringstream stream;
-    vector<char> options = {'A', 'G'};
-    char option;
-    stream << "What would you like to do?\nATTACK(A)\nGUARD(G)\n";
-    printStream(stream);
-    getSingleInput(option);
-    option = (char)toupper(option);
-    do
-    {
-        if (find(options.begin(), options.end(), option) == options.end())
-        {
-            stream << "Invalid input\n";
-            printStream(stream);
-            getSingleInput(option);
-            option = (char)toupper(option);
-        }
-    } while (find(options.begin(), options.end(), option) == options.end());
-
-    return option;
 }

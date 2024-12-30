@@ -32,21 +32,23 @@ int entity::getAttack()
     return attack;
 }
 
-float entity::getDefense()
+unordered_map<string, float> &entity::getResistances()
 {
-    return defense;
+    return resistances;
+}
+
+std::string &entity::getdamageType()
+{
+    return damageType;
 }
 
 // PLAYER SUBCLASS
-float player::getDefense()
-{
-    return defense;
-}
-
 void player::changeGuard()
 {
     isGuard = isGuard == false ? true : false;
-    defense += isGuard == true ? 0.3 : -0.3;
+    resistances.at("Slash") += isGuard == true ? 0.3 : -0.3;
+    resistances.at("Pierce") += isGuard == true ? 0.2 : -0.2;
+    resistances.at("Magic") += isGuard == true ? 0.1 : -0.1;
 }
 
 bool player::stateGuard()
@@ -55,11 +57,11 @@ bool player::stateGuard()
 }
 
 // KNIGHT SUBCLASS
-knight::knight(int health, int attack, float defense, int idNum)
-    : entity("", health, attack, defense)
+knight::knight(int health, int attack, int idNum, unordered_map<string, float> resistances)
+    : entity("", health, attack, resistances, "Slash")
 {
     std::ostringstream stream;
-    stream << "Knight";
+    stream << "KNIGHT";
     if (idNum > 1)
     {
         stream << "(" << idNum << ")";
@@ -68,11 +70,25 @@ knight::knight(int health, int attack, float defense, int idNum)
 }
 
 // MAGE SUBCLASS
-mage::mage(int health, int attack, float defense, int idNum)
-    : entity("", health, attack, defense)
+mage::mage(int health, int attack, int idNum, unordered_map<string, float> resistances)
+    : entity("", health, attack, resistances, "Magic")
 {
     std::ostringstream stream;
-    stream << "Mage";
+    stream << "MAGE";
+    if (idNum > 1)
+    {
+        stream << "(" << idNum << ")";
+    }
+    id = stream.str();
+}
+
+// ARCHER SUBCLASS
+
+archer::archer(int health, int attack, int idNum, unordered_map<string, float> resistances)
+    : entity("", health, attack, resistances, "Pierce")
+{
+    std::ostringstream stream;
+    stream << "ARCHER";
     if (idNum > 1)
     {
         stream << "(" << idNum << ")";
