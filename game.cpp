@@ -5,12 +5,23 @@
 #include <vector>
 #include <algorithm>
 #include <memory>
+#include <random>
 #include "entities.h"
 #include "game.h"
 
 #define TEXTDELAY 15
 
 using namespace std;
+
+// RANDOM NUMBER GENERATOR
+// *INCLUDES MAX*
+unsigned int getRandom(int max)
+{
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> dist(0, max);
+    return dist(gen);
+}
 
 // DISPLAY FUNCTIONS
 
@@ -88,14 +99,14 @@ unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies)
     getSingleInput(input);
     do
     {
-        if (input < 0 || input > (int)enemies.size())
+        if (input < 1 || input > (int)enemies.size())
         {
             stream << "Invalid input";
             printStream(stream);
             getSingleInput(input);
         }
-    } while (input < 0 || input > (int)enemies.size());
-    return &enemies[input - 1];
+    } while (input < 1 || input > (int)enemies.size());
+    return &enemies.at(input - 1);
 }
 
 void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
@@ -103,13 +114,13 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
     ostringstream stream;
     if (turn % 2 == 0)
     {
-        stream << "PLAYER's turn\n";
+        stream << "Player's turn\n";
     }
     else
     {
-        stream << "ENEMY's turn\n";
+        stream << "Enemy's turn\n";
     }
-    stream << "HEALTH PLAYER: " << player.getHealth() << "\n";
+    stream << "HEALTH Player: " << player.getHealth() << "\n";
     for (unique_ptr<entity> &en : enemies)
     {
         stream << "HEALTH " << en->getID() << ": " << en->getHealth() << "\n";
@@ -117,25 +128,55 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
     printStream(stream);
 }
 
-int attackTarget(entity &target, entity &attacker)
+attack attackTarget(entity &target, entity &attacker)
 {
-    int damage = calcDamage(attacker.getAttack(), attacker.getdamageType(), target);
+    attack act = attacker.getAttack();
+    int damage = calcDamage(act.damage, act.dType, target);
     target.subHealth(damage);
-    return damage;
+    attack info{act.name, act.dType, damage};
+    return info;
 }
 
 void killTarget(entity &target, vector<unique_ptr<entity>> &enemies)
 {
     ostringstream stream;
+    stream << target.getID() << " has died!\n";
     for (auto en = enemies.begin(); en != enemies.end(); en++)
     {
         if (target.getID() == (*en)->getID())
         {
-            en.base()->reset();
             enemies.erase(en);
             break;
         }
     }
-    stream << target.getID() << " has died!\n";
     printStream(stream);
+}
+
+// SETUP FUNCTIONS
+
+void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies)
+{
+    vector<int> idNums = {1, 1, 1};
+    int eType;
+    for (int i = 0; i < numEnemies; i++)
+    {
+        eType = getRandom(2);
+        switch (eType)
+        {
+        case 0:
+            enemies.emplace_back(make_unique<knight>(idNums.at(0)));
+            idNums.at(0)++;
+            break;
+        case 1:
+            enemies.emplace_back(make_unique<mage>(idNums.at(1)));
+            idNums.at(1)++;
+            break;
+        case 2:
+            enemies.emplace_back(make_unique<archer>(idNums.at(2)));
+            idNums.at(2)++;
+            break;
+        default:
+            break;
+        }
+    }
 }

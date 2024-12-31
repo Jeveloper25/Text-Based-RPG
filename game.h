@@ -7,6 +7,8 @@
 
 using namespace std;
 
+unsigned int getRandom(int max);
+
 void printTextByCharacter(const std::string &text, int delay_ms);
 
 void printStream(ostringstream &stream);
@@ -20,10 +22,12 @@ unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies);
 
 void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn);
 
-int attackTarget(entity &target, entity &attacker);
+attack attackTarget(entity &target, entity &attacker);
 
 void killTarget(entity &target, vector<unique_ptr<entity>> &enemies);
 
 char optionMenu();
+
+void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies);
 
 #endif

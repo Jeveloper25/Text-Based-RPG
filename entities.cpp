@@ -1,4 +1,5 @@
 #include "entities.h"
+#include "game.h"
 #include <sstream>
 
 // ENTITY CLASS
@@ -27,19 +28,9 @@ bool entity::isAlive()
     return alive;
 }
 
-int entity::getAttack()
-{
-    return attack;
-}
-
 unordered_map<string, float> &entity::getResistances()
 {
     return resistances;
-}
-
-std::string &entity::getdamageType()
-{
-    return damageType;
 }
 
 // PLAYER SUBCLASS
@@ -56,12 +47,37 @@ bool player::stateGuard()
     return isGuard;
 }
 
+attack &player::getAttack()
+{
+    ostringstream stream;
+    int input;
+    for (int i = 0; i < attacks.size(); i++)
+    {
+        stream << "(" << i + 1 << ") " << attacks.at(i).name << "\n"
+               << "Type: " << attacks.at(i).dType << "\n"
+               << "Damage: " << attacks.at(i).damage << "\n\n";
+    }
+    printStream(stream);
+    getSingleInput(input);
+    do
+    {
+        if (input < 1 || input > (int)attacks.size())
+        {
+            stream << "Invalid input";
+            printStream(stream);
+            getSingleInput(input);
+        }
+    } while (input < 1 || input > (int)attacks.size());
+
+    return attacks.at(input - 1);
+}
+
 // KNIGHT SUBCLASS
-knight::knight(int health, int attack, int idNum, unordered_map<string, float> resistances)
-    : entity("", health, attack, resistances, "Slash")
+knight::knight(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
+    : entity("", health, attacks, resistances, "Slash")
 {
     std::ostringstream stream;
-    stream << "KNIGHT";
+    stream << "Knight";
     if (idNum > 1)
     {
         stream << "(" << idNum << ")";
@@ -69,29 +85,47 @@ knight::knight(int health, int attack, int idNum, unordered_map<string, float> r
     id = stream.str();
 }
 
+attack &knight::getAttack()
+{
+    int index = getRandom(attacks.size() - 1);
+    return attacks.at(index);
+}
+
 // MAGE SUBCLASS
-mage::mage(int health, int attack, int idNum, unordered_map<string, float> resistances)
-    : entity("", health, attack, resistances, "Magic")
+mage::mage(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
+    : entity("", health, attacks, resistances, "Magic")
 {
     std::ostringstream stream;
-    stream << "MAGE";
+    stream << "Mage";
     if (idNum > 1)
     {
         stream << "(" << idNum << ")";
     }
     id = stream.str();
+}
+
+attack &mage::getAttack()
+{
+    int index = getRandom(attacks.size() - 1);
+    return attacks.at(index);
 }
 
 // ARCHER SUBCLASS
 
-archer::archer(int health, int attack, int idNum, unordered_map<string, float> resistances)
-    : entity("", health, attack, resistances, "Pierce")
+archer::archer(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
+    : entity("", health, attacks, resistances, "Pierce")
 {
     std::ostringstream stream;
-    stream << "ARCHER";
+    stream << "Archer";
     if (idNum > 1)
     {
         stream << "(" << idNum << ")";
     }
     id = stream.str();
+}
+
+attack &archer::getAttack()
+{
+    int index = getRandom(attacks.size() - 1);
+    return attacks.at(index);
 }

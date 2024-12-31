@@ -1,6 +1,4 @@
 #include <iostream>
-#include <chrono>
-#include <thread>
 #include <sstream>
 #include <vector>
 #include "entities.h"
@@ -12,30 +10,18 @@ int main()
 {
     ostringstream stream;
 
-    unique_ptr<player> p1 = make_unique<player>(100, 60);
+    unique_ptr<player> p1 = make_unique<player>();
     vector<unique_ptr<entity>> enemies;
-    enemies.emplace_back(make_unique<mage>(50, 30, 1));
-    enemies.emplace_back(make_unique<archer>(50, 30, 1));
-    enemies.emplace_back(make_unique<knight>(75, 20, 1));
+    // enemies.emplace_back(make_unique<mage>(1));
+    // enemies.emplace_back(make_unique<archer>(1));
+    // enemies.emplace_back(make_unique<knight>(1));
     unique_ptr<entity> *target;
-    int damage;
+    attack attackInfo;
 
     int turn = 0;
     char option;
 
-    // unordered_map<string, float> resists = p1->getResistances();
-    // cout << "\n"
-    //      << p1->getID() << "\n"
-    //      << "Slash: " << resists.at("Slash") << " Pierce: " << resists.at("Pierce") << " Magic: " << resists.at("Magic") << "\n"
-    //      << "Self Damage: " << calcDamage(50, "Magic", *p1) << endl;
-    // for (unique_ptr<entity> &en : enemies)
-    // {
-    //     unordered_map<string, float> resist = (*en).getResistances();
-    //     cout << "\n"
-    //          << (*en).getID() << "\n"
-    //          << "Slash: " << resist.at("Slash") << " Pierce: " << resist.at("Pierce") << " Magic: " << resist.at("Magic") << "\n"
-    //          << "Self Damage: " << calcDamage(50, "Magic", *en) << endl;
-    // }
+    populateEnemies(enemies, 3);
 
     while (p1->isAlive() && !(enemies.empty()))
     {
@@ -51,8 +37,9 @@ int main()
             if (option == 'A')
             {
                 target = getTarget(enemies);
-                damage = attackTarget(**target, *p1);
-                stream << "You dealt " << damage << "damage!\n";
+                attackInfo = attackTarget(**target, *p1);
+                stream << "You used " << attackInfo.name << "!\n"
+                       << "You dealt " << attackInfo.damage << " damage to " << (*target)->getID() << "!\n";
                 printStream(stream);
                 if (!(*target)->isAlive())
                 {
@@ -70,8 +57,9 @@ int main()
         {
             for (unique_ptr<entity> &en : enemies)
             {
-                damage = attackTarget(*p1, *en);
-                stream << en->getID() << " dealt " << damage << "damage!\n";
+                attackInfo = attackTarget(*p1, *en);
+                stream << en->getID() << " used " << attackInfo.name << "!\n"
+                       << en->getID() << " dealt " << attackInfo.damage << "damage!\n";
                 printStream(stream);
             }
         }
