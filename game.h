@@ -9,6 +9,8 @@ using namespace std;
 
 unsigned int getRandom(int max);
 
+void printLine(int size);
+
 void printTextByCharacter(const std::string &text, int delay_ms);
 
 void printStream(ostringstream &stream);

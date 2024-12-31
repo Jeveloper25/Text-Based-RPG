@@ -68,7 +68,7 @@ attack &player::getAttack()
             getSingleInput(input);
         }
     } while (input < 1 || input > (int)attacks.size());
-
+    printLine(40);
     return attacks.at(input - 1);
 }
 

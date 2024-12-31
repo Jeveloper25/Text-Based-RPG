@@ -25,6 +25,14 @@ unsigned int getRandom(int max)
 
 // DISPLAY FUNCTIONS
 
+void printLine(int size)
+{
+    ostringstream stream;
+    string line(size, '~');
+    stream << line;
+    printStream(stream);
+}
+
 void printTextByCharacter(const std::string &text, int delay_ms)
 {
     for (char c : text)
@@ -58,7 +66,7 @@ char optionMenu()
     ostringstream stream;
     vector<char> options = {'A', 'G'};
     char option;
-    stream << "What would you like to do?\nATTACK(A)\nGUARD(G)\n";
+    stream << "What would you like to do?\n(A)ATTACK\n(G)GUARD\n";
     printStream(stream);
     getSingleInput(option);
     option = (char)toupper(option);
@@ -72,8 +80,32 @@ char optionMenu()
             option = (char)toupper(option);
         }
     } while (find(options.begin(), options.end(), option) == options.end());
-
+    printLine(40);
     return option;
+}
+
+void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
+{
+    ostringstream stream;
+    string line(20, '-');
+    printLine(40);
+    if (turn % 2 == 0)
+    {
+        stream << "Player's turn\n\n";
+    }
+    else
+    {
+        stream << "Enemy's turn\n\n";
+    }
+    stream << line << "\nHEALTH Player: " << player.getHealth() << "\n"
+           << line << "\n";
+    for (unique_ptr<entity> &en : enemies)
+    {
+        stream << "HEALTH " << en->getID() << ": " << en->getHealth() << "\n"
+               << line << "\n";
+    }
+    printStream(stream);
+    printLine(40);
 }
 
 // COMBAT FUNCTIONS
@@ -106,26 +138,8 @@ unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies)
             getSingleInput(input);
         }
     } while (input < 1 || input > (int)enemies.size());
+    printLine(40);
     return &enemies.at(input - 1);
-}
-
-void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
-{
-    ostringstream stream;
-    if (turn % 2 == 0)
-    {
-        stream << "Player's turn\n";
-    }
-    else
-    {
-        stream << "Enemy's turn\n";
-    }
-    stream << "HEALTH Player: " << player.getHealth() << "\n";
-    for (unique_ptr<entity> &en : enemies)
-    {
-        stream << "HEALTH " << en->getID() << ": " << en->getHealth() << "\n";
-    }
-    printStream(stream);
 }
 
 attack attackTarget(entity &target, entity &attacker)

@@ -1,10 +1,16 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 #include "entities.h"
 #include "game.h"
 
 using namespace std;
+
+bool cmp_by_id(const unique_ptr<entity> &a, const unique_ptr<entity> &b)
+{
+    return a->getID() < b->getID();
+}
 
 int main()
 {
@@ -22,6 +28,7 @@ int main()
     char option;
 
     populateEnemies(enemies, 3);
+    sort(enemies.begin(), enemies.end(), cmp_by_id);
 
     while (p1->isAlive() && !(enemies.empty()))
     {
