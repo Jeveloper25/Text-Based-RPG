@@ -47,6 +47,15 @@ bool player::stateGuard()
     return isGuard;
 }
 
+void player::reset()
+{
+    health = baseHealth;
+    if (stateGuard())
+    {
+        changeGuard();
+    }
+}
+
 attack &player::getAttack()
 {
     ostringstream stream;
@@ -74,7 +83,7 @@ attack &player::getAttack()
 
 // KNIGHT SUBCLASS
 knight::knight(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", health, attacks, resistances, "Slash")
+    : entity("", health, attacks, resistances)
 {
     std::ostringstream stream;
     stream << "Knight";
@@ -93,7 +102,7 @@ attack &knight::getAttack()
 
 // MAGE SUBCLASS
 mage::mage(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", health, attacks, resistances, "Magic")
+    : entity("", health, attacks, resistances)
 {
     std::ostringstream stream;
     stream << "Mage";
@@ -113,7 +122,7 @@ attack &mage::getAttack()
 // ARCHER SUBCLASS
 
 archer::archer(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", health, attacks, resistances, "Pierce")
+    : entity("", health, attacks, resistances)
 {
     std::ostringstream stream;
     stream << "Archer";

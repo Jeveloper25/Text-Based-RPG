@@ -20,12 +20,11 @@ protected:
     int health;
     vector<attack> attacks;
     unordered_map<string, float> resistances;
-    string damageType;
     bool alive = true;
 
 public:
-    entity(string id, int health, vector<attack> attacks, unordered_map<string, float> resistances, string dType)
-        : id{id}, health{health}, attacks{attacks}, resistances{resistances}, damageType{dType}
+    entity(string id, int health, vector<attack> attacks, unordered_map<string, float> resistances)
+        : id{id}, health{health}, attacks{attacks}, resistances{resistances}
     {
     }
     ~entity() {}
@@ -44,16 +43,21 @@ class player : public entity
 {
 protected:
     bool isGuard = false;
+    int baseHealth;
 
 public:
     player(int health = 100,
-           vector<attack> attacks = {{"Strong Slash", "Slash", 60}, {"Thrust", "Pierce", 50}, {"Fireball", "Magic", 50}},
+           vector<attack> attacks = {{"Strong Slash", "Slash", 60}, {"Thrust", "Pierce", 60}, {"Fireball", "Magic", 60}},
            unordered_map<string, float> resistances = {{"Slash", 0.5}, {"Pierce", 0.3}, {"Magic", 0.3}},
            string id = "P1")
-        : entity(id, health, attacks, resistances, "Slash") {}
+        : entity(id, health, attacks, resistances)
+    {
+        baseHealth = health;
+    }
     ~player() {}
     bool stateGuard();
     void changeGuard();
+    void reset();
     virtual attack &getAttack();
 };
 
