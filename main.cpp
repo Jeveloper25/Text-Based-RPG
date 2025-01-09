@@ -18,15 +18,15 @@ int main()
 
     unique_ptr<player> p1 = make_unique<player>();
     vector<unique_ptr<entity>> enemies;
-    // enemies.emplace_back(make_unique<mage>(1));
-    // enemies.emplace_back(make_unique<archer>(1));
-    // enemies.emplace_back(make_unique<knight>(1));
     unique_ptr<entity> *target;
     attack attackInfo;
 
+    double totalExp = 0;
+    int combatLevel = 0;
     int turn = 0;
     char option;
     int main_option;
+
     printLine(50);
     stream << "\t\t\tWelcome";
     printStream(stream);
@@ -48,8 +48,9 @@ int main()
     {
         while (true)
         {
-            populateEnemies(enemies, 1);
+            populateEnemies(enemies, 3, combatLevel);
             sort(enemies.begin(), enemies.end(), cmp_by_id);
+            // COMBAT LOOP
             while (p1->isAlive() && !(enemies.empty()))
             {
                 printInfo(*p1, enemies, turn);
@@ -70,7 +71,7 @@ int main()
                         printStream(stream);
                         if (!(*target)->isAlive())
                         {
-                            killTarget(**target, enemies);
+                            killTarget(**target, enemies, totalExp);
                         }
                     }
                     else if (option == 'G')
@@ -92,6 +93,8 @@ int main()
                 }
                 turn++;
             }
+
+            // POST_COMBAT
             if (p1->isAlive())
             {
                 stream << "All enemies have died!\np1 wins!\n";
@@ -101,8 +104,8 @@ int main()
             {
                 stream << "You have died!\nGame Over!\n";
                 printStream(stream);
+                totalExp = 0;
             }
-            // ADD BREAK
             stream << "Would you like to fight again?\n(1)Yes\n(2)Quit game\n";
             printStream(stream);
             getSingleInput(main_option);
@@ -118,7 +121,16 @@ int main()
             if (main_option == 1)
             {
                 turn = 0;
+                combatLevel++;
+                if (p1->gainExp(totalExp))
+                {
+                    stream << "You have leveled up!";
+                    printStream(stream);
+                }
+                stream << "Current level: " << p1->getLevel() + 1 << "(" << p1->getExp() << " / " << p1->getExpThreshold() << ")";
+                printStream(stream);
                 p1->reset();
+                totalExp = 0;
             }
             else if (main_option == 2)
             {

@@ -9,7 +9,7 @@
 #include "entities.h"
 #include "game.h"
 
-#define TEXTDELAY 15
+#define TEXTDELAY 10
 
 using namespace std;
 
@@ -52,11 +52,13 @@ void printStream(ostringstream &stream)
 
 void getSingleInput(int &input)
 {
+    cout << ">>> ";
     cin >> input;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 void getSingleInput(char &input)
 {
+    cout << ">>> ";
     cin >> input;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
@@ -97,11 +99,11 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
     {
         stream << "Enemy's turn\n\n";
     }
-    stream << line << "\nHEALTH Player: " << player.getHealth() << "\n"
+    stream << line << "\nPlayer" << "\nLEVEL: " << player.getLevel() + 1 << "\nHEALTH: " << player.getHealth() << "\n"
            << line << "\n";
     for (unique_ptr<entity> &en : enemies)
     {
-        stream << "HEALTH " << en->getID() << ": " << en->getHealth() << "\n"
+        stream << en->getID() << "\nLEVEL: " << en->getLevel() + 1 << "\nHEALTH: " << en->getHealth() << "\n"
                << line << "\n";
     }
     printStream(stream);
@@ -151,7 +153,7 @@ attack attackTarget(entity &target, entity &attacker)
     return info;
 }
 
-void killTarget(entity &target, vector<unique_ptr<entity>> &enemies)
+void killTarget(entity &target, vector<unique_ptr<entity>> &enemies, double &totalExp)
 {
     ostringstream stream;
     stream << target.getID() << " has died!\n";
@@ -159,6 +161,7 @@ void killTarget(entity &target, vector<unique_ptr<entity>> &enemies)
     {
         if (target.getID() == (*en)->getID())
         {
+            totalExp += target.getExp();
             enemies.erase(en);
             break;
         }
@@ -168,7 +171,7 @@ void killTarget(entity &target, vector<unique_ptr<entity>> &enemies)
 
 // SETUP FUNCTIONS
 
-void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies)
+void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies, int combatLevel)
 {
     vector<int> idNums = {1, 1, 1};
     int eType;
@@ -178,18 +181,16 @@ void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies)
         switch (eType)
         {
         case 0:
-            enemies.emplace_back(make_unique<knight>(idNums.at(0)));
+            enemies.emplace_back(make_unique<knight>(idNums.at(0), combatLevel));
             idNums.at(0)++;
             break;
         case 1:
-            enemies.emplace_back(make_unique<mage>(idNums.at(1)));
+            enemies.emplace_back(make_unique<mage>(idNums.at(1), combatLevel));
             idNums.at(1)++;
             break;
         case 2:
-            enemies.emplace_back(make_unique<archer>(idNums.at(2)));
+            enemies.emplace_back(make_unique<archer>(idNums.at(2), combatLevel));
             idNums.at(2)++;
-            break;
-        default:
             break;
         }
     }

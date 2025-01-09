@@ -23,6 +23,11 @@ int entity::getHealth()
     return health;
 }
 
+int entity::getLevel()
+{
+    return level;
+}
+
 bool entity::isAlive()
 {
     return alive;
@@ -49,11 +54,29 @@ bool player::stateGuard()
 
 void player::reset()
 {
-    health = baseHealth;
+    health = (baseHealth * (1 + (level * 0.2)));
     if (stateGuard())
     {
         changeGuard();
     }
+}
+
+double player::getExpThreshold()
+{
+    return expThreshold;
+}
+
+bool player::gainExp(double exp)
+{
+    this->exp += exp;
+    if (exp >= expThreshold)
+    {
+        level++;
+        this->exp -= expThreshold;
+        expThreshold *= 1.2;
+        return true;
+    }
+    return false;
 }
 
 attack &player::getAttack()
@@ -82,9 +105,11 @@ attack &player::getAttack()
 }
 
 // KNIGHT SUBCLASS
-knight::knight(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", health, attacks, resistances)
+knight::knight(int idNum, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
+    : entity("", level, health, exp, attacks, resistances)
 {
+    this->health = (int)(health * (1 + (level * 0.3)));
+
     std::ostringstream stream;
     stream << "Knight";
     if (idNum > 1)
@@ -100,10 +125,17 @@ attack &knight::getAttack()
     return attacks.at(index);
 }
 
-// MAGE SUBCLASS
-mage::mage(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", health, attacks, resistances)
+double knight::getExp()
 {
+    return (exp * (1 + (level * 0.3)));
+}
+
+// MAGE SUBCLASS
+mage::mage(int idNum, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
+    : entity("", level, health, exp, attacks, resistances)
+{
+    this->health = (int)(health * (1 + (level * 0.1)));
+
     std::ostringstream stream;
     stream << "Mage";
     if (idNum > 1)
@@ -111,6 +143,11 @@ mage::mage(int idNum, int health, vector<attack> attacks, unordered_map<string, 
         stream << "(" << idNum << ")";
     }
     id = stream.str();
+}
+
+double mage::getExp()
+{
+    return (exp * (1 + (level * 0.1)));
 }
 
 attack &mage::getAttack()
@@ -121,9 +158,11 @@ attack &mage::getAttack()
 
 // ARCHER SUBCLASS
 
-archer::archer(int idNum, int health, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", health, attacks, resistances)
+archer::archer(int idNum, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
+    : entity("", level, health, exp, attacks, resistances)
 {
+    this->health = (int)(health * (1 + (level * 0.2)));
+
     std::ostringstream stream;
     stream << "Archer";
     if (idNum > 1)
@@ -131,6 +170,11 @@ archer::archer(int idNum, int health, vector<attack> attacks, unordered_map<stri
         stream << "(" << idNum << ")";
     }
     id = stream.str();
+}
+
+double archer::getExp()
+{
+    return (exp * (1 + (level * 0.2)));
 }
 
 attack &archer::getAttack()

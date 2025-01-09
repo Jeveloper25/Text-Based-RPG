@@ -26,10 +26,10 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn);
 
 attack attackTarget(entity &target, entity &attacker);
 
-void killTarget(entity &target, vector<unique_ptr<entity>> &enemies);
+void killTarget(entity &target, vector<unique_ptr<entity>> &enemies, double &totalExp);
 
 char optionMenu();
 
-void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies);
+void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies, int combatLevel);
 
 #endif
