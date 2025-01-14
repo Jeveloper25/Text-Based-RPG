@@ -1,6 +1,7 @@
 #include "entities.h"
 #include "game.h"
 #include <sstream>
+#include <memory>
 
 // ENTITY CLASS
 
@@ -83,11 +84,12 @@ attack &player::getAttack()
 {
     ostringstream stream;
     int input;
+    vector<attack> &attacks = currWeapon->getAttacks();
     for (int i = 0; i < attacks.size(); i++)
     {
         stream << "(" << i + 1 << ") " << attacks.at(i).name << "\n"
                << "Type: " << attacks.at(i).dType << "\n"
-               << "Damage: " << attacks.at(i).damage << "\n\n";
+               << "Damage: " << attacks.at(i).damageMultiplier * currWeapon->getDamage() << "\n\n";
     }
     printStream(stream);
     getSingleInput(input);
@@ -105,10 +107,11 @@ attack &player::getAttack()
 }
 
 // KNIGHT SUBCLASS
-knight::knight(int idNum, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", level, health, exp, attacks, resistances)
+knight::knight(int idNum, int level, int health, double exp, unordered_map<string, float> resistances)
+    : entity("", level, health, exp, resistances)
 {
     this->health = (int)(health * (1 + (level * 0.3)));
+    currWeapon = make_shared<sword>();
 
     std::ostringstream stream;
     stream << "Knight";
@@ -121,6 +124,7 @@ knight::knight(int idNum, int level, int health, double exp, vector<attack> atta
 
 attack &knight::getAttack()
 {
+    vector<attack> &attacks = currWeapon->getAttacks();
     int index = getRandom(attacks.size() - 1);
     return attacks.at(index);
 }
@@ -131,10 +135,11 @@ double knight::getExp()
 }
 
 // MAGE SUBCLASS
-mage::mage(int idNum, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", level, health, exp, attacks, resistances)
+mage::mage(int idNum, int level, int health, double exp, unordered_map<string, float> resistances)
+    : entity("", level, health, exp, resistances)
 {
     this->health = (int)(health * (1 + (level * 0.1)));
+    currWeapon = make_shared<staff>();
 
     std::ostringstream stream;
     stream << "Mage";
@@ -152,16 +157,18 @@ double mage::getExp()
 
 attack &mage::getAttack()
 {
+    vector<attack> &attacks = currWeapon->getAttacks();
     int index = getRandom(attacks.size() - 1);
     return attacks.at(index);
 }
 
 // ARCHER SUBCLASS
 
-archer::archer(int idNum, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
-    : entity("", level, health, exp, attacks, resistances)
+archer::archer(int idNum, int level, int health, double exp, unordered_map<string, float> resistances)
+    : entity("", level, health, exp, resistances)
 {
     this->health = (int)(health * (1 + (level * 0.2)));
+    currWeapon = make_shared<bow>();
 
     std::ostringstream stream;
     stream << "Archer";
@@ -179,6 +186,7 @@ double archer::getExp()
 
 attack &archer::getAttack()
 {
+    vector<attack> &attacks = currWeapon->getAttacks();
     int index = getRandom(attacks.size() - 1);
     return attacks.at(index);
 }

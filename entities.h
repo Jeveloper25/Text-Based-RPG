@@ -3,15 +3,10 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <memory>
+#include "items.h"
 
 using namespace std;
-
-struct attack
-{
-    string name;
-    string dType;
-    int damage;
-};
 
 class entity
 {
@@ -20,13 +15,13 @@ protected:
     int level;
     int health;
     double exp;
-    vector<attack> attacks;
     unordered_map<string, float> resistances;
+    shared_ptr<weapon> currWeapon;
     bool alive = true;
 
 public:
-    entity(string id, int level, int health, double exp, vector<attack> attacks, unordered_map<string, float> resistances)
-        : id{id}, level{level}, health{health}, exp{exp}, attacks{attacks}, resistances{resistances}
+    entity(string id, int level, int health, double exp, unordered_map<string, float> resistances)
+        : id{id}, level{level}, health{health}, exp{exp}, resistances{resistances}
     {
     }
     ~entity() {}
@@ -38,11 +33,15 @@ public:
     const string &getID();
     virtual attack &getAttack()
     {
-        return attacks[0];
+        return currWeapon->getAttacks()[0];
     }
     virtual double getExp()
     {
         return exp;
+    }
+    int getRaw()
+    {
+        return currWeapon->getDamage();
     }
 };
 
@@ -57,11 +56,11 @@ public:
     player(int level = 0,
            int health = 100,
            double exp = 0,
-           vector<attack> attacks = {{"Strong Slash", "Slash", 60}, {"Thrust", "Pierce", 60}, {"Fireball", "Magic", 60}},
            unordered_map<string, float> resistances = {{"Slash", 0.5}, {"Pierce", 0.3}, {"Magic", 0.3}},
            string id = "P1")
-        : entity(id, level, health, exp, attacks, resistances)
+        : entity(id, level, health, exp, resistances)
     {
+        currWeapon = make_shared<playerWep>();
         baseHealth = health;
     }
     ~player() {}
@@ -80,7 +79,6 @@ public:
            int level = 0,
            int health = 75,
            double exp = 40,
-           vector<attack> attacks = {{"Weak Slash", "Slash", 10}, {"Thrust", "Pierce", 15}, {"Focused Slash", "Slash", 30}},
            unordered_map<string, float> resistances = {{"Slash", 0.5}, {"Pierce", 0.2}, {"Magic", 0.2}});
     virtual attack &getAttack();
     virtual double getExp();
@@ -93,7 +91,6 @@ public:
          int level = 0,
          int health = 50,
          double exp = 30,
-         vector<attack> attacks = {{"Incinerate", "Magic", 25}, {"Smite", "Magic", 40}, {"Ice Shard", "Pierce", 15}},
          unordered_map<string, float> resistances = {{"Slash", 0.1}, {"Pierce", 0.1}, {"Magic", 0.5}});
     virtual attack &getAttack();
     virtual double getExp();
@@ -106,7 +103,6 @@ public:
            int level = 0,
            int health = 50,
            double exp = 25,
-           vector<attack> attacks = {{"Weak Shot", "Pierce", 15}, {"Charged Shot", "Pierce", 25}, {"Rain of Arrows", "Pierce", 40}},
            unordered_map<string, float> resistances = {{"Slash", 0.2}, {"Pierce", 0.5}, {"Magic", 0.1}});
     virtual attack &getAttack();
     virtual double getExp();

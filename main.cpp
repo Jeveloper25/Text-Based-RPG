@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "entities.h"
 #include "game.h"
+#include "items.h"
 
 using namespace std;
 
@@ -19,7 +20,7 @@ int main()
     unique_ptr<player> p1 = make_unique<player>();
     vector<unique_ptr<entity>> enemies;
     unique_ptr<entity> *target;
-    attack attackInfo;
+    attack attackInfo; // dM for attackInfo is the damage dealt
 
     double totalExp = 0;
     int combatLevel = 0;
@@ -67,7 +68,7 @@ int main()
                         target = getTarget(enemies);
                         attackInfo = attackTarget(**target, *p1);
                         stream << "You used " << attackInfo.name << "!\n"
-                               << "You dealt " << attackInfo.damage << " damage to " << (*target)->getID() << "!\n";
+                               << "You dealt " << (int)attackInfo.damageMultiplier << " damage to " << (*target)->getID() << "!\n";
                         printStream(stream);
                         if (!(*target)->isAlive())
                         {
@@ -87,7 +88,7 @@ int main()
                     {
                         attackInfo = attackTarget(*p1, *en);
                         stream << en->getID() << " used " << attackInfo.name << "!\n"
-                               << en->getID() << " dealt " << attackInfo.damage << "damage!\n";
+                               << en->getID() << " dealt " << (int)attackInfo.damageMultiplier << " damage!\n";
                         printStream(stream);
                     }
                 }

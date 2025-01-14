@@ -18,7 +18,7 @@ void printStream(ostringstream &stream);
 void getSingleInput(int &input);
 void getSingleInput(char &input);
 
-int calcDamage(int raw, const string &dType, entity &target);
+double calcDamage(int raw, const string &dType, entity &target);
 
 unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies);
 

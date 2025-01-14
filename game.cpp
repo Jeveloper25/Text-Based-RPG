@@ -112,7 +112,7 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
 
 // COMBAT FUNCTIONS
 
-int calcDamage(int raw, const string &dType, entity &target)
+double calcDamage(int raw, const string &dType, entity &target)
 {
     unordered_map<string, float> resistances = target.getResistances();
     return raw * (1 - resistances.at(dType));
@@ -146,8 +146,9 @@ unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies)
 
 attack attackTarget(entity &target, entity &attacker)
 {
-    attack act = attacker.getAttack();
-    int damage = calcDamage(act.damage, act.dType, target);
+    attack &act = attacker.getAttack();
+    int raw = attacker.getRaw();
+    double damage = calcDamage(act.damageMultiplier * raw, act.dType, target);
     target.subHealth(damage);
     attack info{act.name, act.dType, damage};
     return info;
