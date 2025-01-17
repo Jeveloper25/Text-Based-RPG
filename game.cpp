@@ -9,7 +9,7 @@
 #include "entities.h"
 #include "game.h"
 
-#define TEXTDELAY 10
+#define TEXTDELAY 15
 
 using namespace std;
 
@@ -82,7 +82,6 @@ char optionMenu()
             option = (char)toupper(option);
         }
     } while (find(options.begin(), options.end(), option) == options.end());
-    printLine(40);
     return option;
 }
 
@@ -99,7 +98,7 @@ void printInfo(entity &player, vector<unique_ptr<entity>> &enemies, int turn)
     {
         stream << "Enemy's turn\n\n";
     }
-    stream << line << "\nPlayer" << "\nLEVEL: " << player.getLevel() + 1 << "\nHEALTH: " << player.getHealth() << "\n"
+    stream << line << "\nPlayer" << "\nLEVEL: " << player.getLevel() + 1 << "\nHEALTH: " << player.getHealth() << "\nSTAMINA: " << player.getStam() << "\n"
            << line << "\n";
     for (unique_ptr<entity> &en : enemies)
     {
@@ -146,11 +145,12 @@ unique_ptr<entity> *getTarget(vector<unique_ptr<entity>> &enemies)
 
 attack attackTarget(entity &target, entity &attacker)
 {
-    attack &act = attacker.getAttack();
+    attack act = attacker.getAttack();
     int raw = attacker.getRaw();
     double damage = calcDamage(act.damageMultiplier * raw, act.dType, target);
     target.subHealth(damage);
-    attack info{act.name, act.dType, damage};
+    attacker.changeStam(false, act.staminaCost);
+    attack info{act.name, act.dType, damage, 0};
     return info;
 }
 
