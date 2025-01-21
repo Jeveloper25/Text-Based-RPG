@@ -23,12 +23,14 @@ class weapon
 {
 protected:
     int baseDamage;
+    string name;
     vector<attack> attacks;
 
 public:
     weapon() {}
     vector<attack> &getAttacks() { return attacks; }
     int getDamage() { return baseDamage; }
+    string getName() { return name; }
 };
 
 // TEMP
@@ -37,7 +39,8 @@ class playerWep : public weapon
 public:
     playerWep()
     {
-        baseDamage = 60;
+        name = "MyWep";
+        baseDamage = 1000;
         attacks.emplace_back(attack("Strong Slash", "Slash", 1.0, 60));
         attacks.emplace_back(attack("Thrust", "Pierce", 1.0, 60));
         attacks.emplace_back(attack("Fireball", "Magic", 1.0, 60));
@@ -49,6 +52,7 @@ class sword : public weapon
 public:
     sword()
     {
+        name = "Steel Sword";
         baseDamage = 10;
         attacks.emplace_back("Weak Slash", "Slash", 1.0, 30);
         attacks.emplace_back("Thrust", "Pierce", 1.5, 45);
@@ -61,6 +65,7 @@ class staff : public weapon
 public:
     staff()
     {
+        name = "Wooden staff";
         baseDamage = 5;
         attacks.emplace_back("Incinerate", "Magic", 5.0, 60);
         attacks.emplace_back("Smite", "Magic", 8.0, 80);
@@ -73,6 +78,7 @@ class bow : public weapon
 public:
     bow()
     {
+        name = "Long bow";
         baseDamage = 5;
         attacks.emplace_back("Weak Shot", "Pierce", 3.0, 20);
         attacks.emplace_back("Charged Shot", "Pierce", 5.0, 40);

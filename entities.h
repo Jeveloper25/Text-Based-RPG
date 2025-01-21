@@ -45,6 +45,7 @@ public:
     }
     int getStam() { return stamina; }
     bool checkStam();
+    shared_ptr<weapon> getLoot();
 };
 
 class player : public entity
@@ -54,6 +55,7 @@ protected:
     int baseStamina;
     bool isGuard = false;
     double expThreshold = 100;
+    unordered_map<string, shared_ptr<weapon>> inventory;
 
 public:
     player();
@@ -64,6 +66,9 @@ public:
     double getExpThreshold();
     bool gainExp(double exp);
     virtual attack getAttack();
+    void insertInventory(shared_ptr<weapon> wep);
+    unordered_map<string, shared_ptr<weapon>> &getInv() { return inventory; }
+    void setCurrWeapon(shared_ptr<weapon> newWeapon) { currWeapon = newWeapon; }
 };
 
 class knight : public entity

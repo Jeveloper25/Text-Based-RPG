@@ -21,157 +21,15 @@ bool cmp_by_id(const unique_ptr<entity> &a, const unique_ptr<entity> &b)
 }
 
 /*
-    Prints Main menu and returns user's choice
+    MAIN FUNCTION
 */
-int mainMenu()
-{
-    ostringstream stream;
-    int mainOption;
-
-    printLine(50);
-    stream << "\t\t\tWelcome";
-    printStream(stream);
-    printLine(50);
-    stream << "Select an option:\n(1)Start Game\n(2)Exit\n";
-    printStream(stream);
-    getSingleInput(mainOption);
-
-    do
-    {
-        if (mainOption < 1 || mainOption > 2)
-        {
-            stream << "Invalid input";
-            printStream(stream);
-            getSingleInput(mainOption);
-        }
-    } while (mainOption < 1 || mainOption > 2);
-
-    return mainOption;
-}
-
-/*
-    Resets player's guard and regens stamina, also gets first option
-*/
-char startPlayerTurn(player &p, int turn)
-{
-    ostringstream stream;
-    char option;
-
-    if (p.stateGuard())
-    {
-        p.changeGuard();
-    }
-
-    option = optionMenu();
-
-    do
-    {
-        if (!p.checkStam() && option == 'A')
-        {
-            stream << "Insufficient stamina";
-            printStream(stream);
-            getSingleInput(option);
-        }
-    } while (!p.checkStam() && option == 'A');
-    printLine(40);
-    return option;
-}
-
-/*
-    Option A of Player's turn
-*/
-void playerAttack(player &p, vector<unique_ptr<entity>> &enemies, double &totalExp)
-{
-    ostringstream stream;
-    unique_ptr<entity> *target;
-    attack attackInfo; // dM for attackInfo is the damage dealt, stamCost always 0(not displayed)
-
-    target = getTarget(enemies);
-    attackInfo = attackTarget(**target, p);
-    stream << "You used " << attackInfo.name << "!\n"
-           << "You dealt " << (int)attackInfo.damageMultiplier << " damage to " << (*target)->getID() << "!\n";
-    printStream(stream);
-    if (!(*target)->isAlive())
-    {
-        killTarget(**target, enemies, totalExp);
-    }
-}
-
-/*
-    Processes enemy turn
-*/
-void enemyAttack(player &p, vector<unique_ptr<entity>> &enemies, int turn)
-{
-    ostringstream stream;
-    attack attackInfo;
-
-    for (unique_ptr<entity> &en : enemies)
-    {
-        if (turn != 1)
-        {
-            en->changeStam(true);
-        }
-
-        if (en->checkStam())
-        {
-            attackInfo = attackTarget(p, *en);
-            stream << en->getID() << " used " << attackInfo.name << "!\n"
-                   << en->getID() << " dealt " << (int)attackInfo.damageMultiplier << " damage!\n";
-            printStream(stream);
-        }
-        else
-        {
-            stream << en->getID() << " passes their turn!\n";
-            printStream(stream);
-        }
-    }
-}
-
-/*
-    Post combat menus
-*/
-int postCombat(player &p, double &totalExp)
-{
-    ostringstream stream;
-    int postOption;
-
-    // POST_COMBAT INFO
-    if (p.isAlive())
-    {
-        stream << "All enemies have died!\np1 wins!\n";
-        printStream(stream);
-    }
-    else
-    {
-        stream << "You have died!\nGame Over!\n";
-        printStream(stream);
-        totalExp = 0;
-    }
-
-    // POST COMBAT INPUT
-    stream << "Would you like to fight again?\n(1)Yes\n(2)Quit game\n";
-    printStream(stream);
-    getSingleInput(postOption);
-
-    do
-    {
-        if (postOption < 1 || postOption > 2)
-        {
-            stream << "Invalid input";
-            printStream(stream);
-            getSingleInput(postOption);
-        }
-    } while (postOption < 1 || postOption > 2);
-
-    return postOption;
-}
-
 int main()
 {
     ostringstream stream;
 
     unique_ptr<player> p1 = make_unique<player>();
     vector<unique_ptr<entity>> enemies;
+    unordered_map<string, shared_ptr<weapon>> lootTable;
 
     double totalExp = 0;
     int combatLevel = 0;
@@ -182,8 +40,10 @@ int main()
         bool playGame = true;
         while (playGame)
         {
-            populateEnemies(enemies, 3, combatLevel);
+            equipmentSelect(*p1);
+            populateEnemies(enemies, 1, combatLevel);
             sort(enemies.begin(), enemies.end(), cmp_by_id);
+            determineLoot(lootTable, enemies);
             // COMBAT LOOP
             while (p1->isAlive() && !(enemies.empty()))
             {
@@ -223,6 +83,7 @@ int main()
             case 1:
                 turn = 0;
                 combatLevel++;
+                printLine(40);
                 if (p1->gainExp(totalExp))
                 {
                     stream << "You have leveled up!";
@@ -230,6 +91,8 @@ int main()
                 }
                 stream << "Current level: " << p1->getLevel() + 1 << "(" << p1->getExp() << " / " << p1->getExpThreshold() << ")";
                 printStream(stream);
+                selectLoot(lootTable, *p1);
+                printLine(40);
                 p1->reset();
                 totalExp = 0;
                 break;

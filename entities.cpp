@@ -55,7 +55,7 @@ bool entity::checkStam()
 {
     for (attack &at : currWeapon->getAttacks())
     {
-        if (at.staminaCost < stamina)
+        if (at.staminaCost <= stamina)
         {
             return true;
         }
@@ -69,6 +69,16 @@ void entity::changeStam(bool regen, int staminaCost)
     regen ? stamina += staminaRegen : stamina -= staminaCost;
 }
 
+shared_ptr<weapon> entity::getLoot()
+{
+    int random = getRandom(9);
+    if (random > 4)
+    {
+        return currWeapon;
+    }
+    return nullptr;
+}
+
 // PLAYER SUBCLASS
 player::player()
     : entity("P1", 0, 100, 100, 40, 0, {{"Slash", 0.5}, {"Pierce", 0.3}, {"Magic", 0.3}})
@@ -76,6 +86,7 @@ player::player()
     currWeapon = make_shared<playerWep>();
     baseHealth = health;
     baseStamina = stamina;
+    inventory[currWeapon->getName()] = currWeapon;
 }
 
 void player::changeGuard()
@@ -165,6 +176,11 @@ attack player::getAttack()
 
     printLine(40);
     return *chosen;
+}
+
+void player::insertInventory(shared_ptr<weapon> wep)
+{
+    inventory.try_emplace(wep->getName(), wep);
 }
 
 // KNIGHT SUBCLASS
