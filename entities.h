@@ -50,12 +50,13 @@ public:
 
 class player : public entity
 {
-protected:
+private:
     int baseHealth;
     int baseStamina;
     bool isGuard = false;
     double expThreshold = 100;
-    unordered_map<string, shared_ptr<weapon>> inventory;
+    unordered_map<string, shared_ptr<weapon>> weaponInventory;
+    unordered_map<string, shared_ptr<consumable>> consInventory;
 
 public:
     player();
@@ -66,9 +67,13 @@ public:
     double getExpThreshold();
     bool gainExp(double exp);
     virtual attack getAttack();
-    void insertInventory(shared_ptr<weapon> wep);
-    unordered_map<string, shared_ptr<weapon>> &getInv() { return inventory; }
+    void insertInv(shared_ptr<weapon> wep);
+    void insertInv(string itemName);
+    void useItem(string name);
+    unordered_map<string, shared_ptr<weapon>> &getWeps() { return weaponInventory; }
+    unordered_map<string, shared_ptr<consumable>> &getItems() { return consInventory; }
     void setCurrWeapon(shared_ptr<weapon> newWeapon) { currWeapon = newWeapon; }
+    void heal(int val) { health += val; }
 };
 
 class knight : public entity

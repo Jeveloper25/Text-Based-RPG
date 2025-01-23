@@ -83,10 +83,13 @@ shared_ptr<weapon> entity::getLoot()
 player::player()
     : entity("P1", 0, 100, 100, 40, 0, {{"Slash", 0.5}, {"Pierce", 0.3}, {"Magic", 0.3}})
 {
-    currWeapon = make_shared<playerWep>();
+    currWeapon = make_shared<sword>();
     baseHealth = health;
     baseStamina = stamina;
-    inventory[currWeapon->getName()] = currWeapon;
+    weaponInventory[currWeapon->getName()] = currWeapon;
+    consInventory.emplace("Health Potion", make_shared<potion>());
+    consInventory["Health Potion"]->addCons();
+    consInventory["Health Potion"]->addCons();
 }
 
 void player::changeGuard()
@@ -105,7 +108,7 @@ bool player::stateGuard()
 void player::reset()
 {
     health = (baseHealth * (1 + (level * 0.2)));
-    stamina = (baseStamina * (1 + (level * 0.2)));
+    stamina = (baseStamina * (1 + (level * 0.1)));
     if (stateGuard())
     {
         changeGuard();
@@ -141,7 +144,7 @@ attack player::getAttack()
     {
         stream << "(" << i + 1 << ") " << attacks.at(i).name << "\n"
                << "Type: " << attacks.at(i).dType << "\n"
-               << "Damage: " << attacks.at(i).damageMultiplier * currWeapon->getDamage() << "\n"
+               << "Damage: " << attacks.at(i).damageMultiplier * currWeapon->getDamage() * 2 << "\n"
                << "Stamina Cost: " << attacks.at(i).staminaCost << "\n";
         if (attacks.at(i).staminaCost > stamina)
         {
@@ -178,9 +181,24 @@ attack player::getAttack()
     return *chosen;
 }
 
-void player::insertInventory(shared_ptr<weapon> wep)
+void player::insertInv(shared_ptr<weapon> wep)
 {
-    inventory.try_emplace(wep->getName(), wep);
+    weaponInventory.try_emplace(wep->getName(), wep);
+}
+
+void player::insertInv(string itemName)
+{
+    consInventory[itemName]->addCons();
+}
+
+void player::useItem(string name)
+{
+    consumable &usedItem = *consInventory[name];
+    string cType = usedItem.getCType();
+    if (cType == "Healing")
+    {
+        health += usedItem.useItem();
+    }
 }
 
 // KNIGHT SUBCLASS

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -19,18 +20,72 @@ public:
         : name{name}, dType{dType}, damageMultiplier{dM}, staminaCost{sC} {}
 };
 
-class weapon
+class item
+{
+protected:
+    string name;
+    string type;
+
+public:
+    string getName() { return name; }
+};
+
+/***
+ * Only one instance of a given subclass should exist at any given time,
+ * keep track of how many "are left" using the count variable.
+ * Adding to the count is the responsibility of the user.
+ */
+class consumable : public item
+{
+protected:
+    int count = 1;
+    string cType;
+
+public:
+    consumable() { type = "consumable"; }
+    virtual int useItem() { return -1; }
+    void addCons() { count++; }
+    string getCType() { return cType; }
+    virtual string getEffect() { return "l"; }
+    int getCount() { return count; }
+};
+
+class potion : public consumable
+{
+private:
+    int healAmount = 40;
+
+public:
+    potion()
+    {
+        cType = "Healing";
+        name = "Health Potion";
+    }
+    virtual int useItem()
+    {
+        count--;
+        return healAmount;
+    }
+    string getEffect()
+    {
+        ostringstream stream;
+        string test;
+        stream << "Heals " << healAmount << " HP";
+        test = stream.str();
+        return test;
+    }
+};
+
+class weapon : public item
 {
 protected:
     int baseDamage;
-    string name;
     vector<attack> attacks;
 
 public:
-    weapon() {}
+    weapon() { type = "weapon"; }
     vector<attack> &getAttacks() { return attacks; }
     int getDamage() { return baseDamage; }
-    string getName() { return name; }
 };
 
 // TEMP
@@ -40,7 +95,7 @@ public:
     playerWep()
     {
         name = "MyWep";
-        baseDamage = 1000;
+        baseDamage = 60;
         attacks.emplace_back(attack("Strong Slash", "Slash", 1.0, 60));
         attacks.emplace_back(attack("Thrust", "Pierce", 1.0, 60));
         attacks.emplace_back(attack("Fireball", "Magic", 1.0, 60));

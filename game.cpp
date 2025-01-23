@@ -172,7 +172,7 @@ void selectLoot(unordered_map<string, shared_ptr<weapon>> &lootTable, player &p)
 
     if (lootTable.size() != 0)
     {
-        stream << "Select a reward:\n\n";
+        stream << "\nSelect a reward:\n\n";
         for (auto [name, wep] : lootTable)
         {
             counter++;
@@ -184,6 +184,7 @@ void selectLoot(unordered_map<string, shared_ptr<weapon>> &lootTable, player &p)
             {
                 stream << at.name << "   ";
             }
+            stream << "\n";
             printStream(stream);
         }
 
@@ -199,8 +200,36 @@ void selectLoot(unordered_map<string, shared_ptr<weapon>> &lootTable, player &p)
             }
         } while (option <= 0 || option > counter);
 
-        p.insertInventory(selection.at(option - 1));
+        p.insertInv(selection.at(option - 1));
     }
+}
+
+/***
+ * Uses RNG to determine what consumables are dropped
+ * and immediately inserts them into the player's inventory.
+ * roll determines how many times the program will check for drops.
+ * FUTUREIMPROVEMENT: tie the possible drops to the enemies that appear.
+ */
+void consumableLoot(player &p, int rolls)
+{
+    int index;
+    ostringstream stream;
+    vector<string> lootTable = {"Health Potion"};
+    stream << "\n";
+    for (int i = 0; i < rolls; i++)
+    {
+        index = getRandom(lootTable.size() - 1);
+        switch (getRandom(1))
+        {
+        case 1:
+            p.insertInv(lootTable.at(index));
+            stream << "You acquired a " << lootTable.at(index) << "!\n";
+            break;
+        default:
+            break;
+        }
+    }
+    printStream(stream);
 }
 
 //// COMBAT FUNCTIONS ////
@@ -242,6 +271,10 @@ attack attackTarget(entity &target, entity &attacker)
     attack act = attacker.getAttack();
     int raw = attacker.getRaw();
     double damage = calcDamage(act.damageMultiplier * raw, act.dType, target);
+    if (attacker.getID() == "P1")
+    {
+        damage *= 2;
+    }
     target.subHealth(damage);
     attacker.changeStam(false, act.staminaCost);
     attack info{act.name, act.dType, damage, 0};
@@ -264,6 +297,64 @@ void killTarget(entity &target, vector<unique_ptr<entity>> &enemies, double &tot
     printStream(stream);
 }
 
+/***
+ * Helper for validOption.
+ * Checks player's item inventory for emptiness.
+ */
+bool validInv(player &p)
+{
+    for (auto [name, item] : p.getItems())
+    {
+        if (item->getCount() != 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+/***
+ * Helper for startPlayerTurn.
+ * Gets player input and checks for validity.
+ */
+bool validOption(char &option, player &p, ostringstream &stream)
+{
+    vector<char> valid = {'A', 'G', 'U'};
+    getSingleInput(option);
+    option = (char)toupper(option);
+    do
+    {
+        if (find(valid.begin(), valid.end(), option) == valid.end())
+        {
+            stream << "Invalid input\n";
+            printStream(stream);
+            getSingleInput(option);
+            option = (char)toupper(option);
+        }
+    } while (find(valid.begin(), valid.end(), option) == valid.end());
+
+    switch (option)
+    {
+    case 'A':
+        if (!p.checkStam())
+        {
+            stream << "Insufficient stamina";
+            return false;
+        }
+        break;
+    case 'U':
+        if (!validInv(p))
+        {
+            stream << "No items to use";
+            return false;
+        }
+        break;
+    default:
+        break;
+    }
+    return true;
+}
+
 /*
  *  Resets player's guard and regens stamina, also gets first option
  */
@@ -271,49 +362,26 @@ char startPlayerTurn(player &p, int turn)
 {
     ostringstream stream;
     char option;
+    bool valid;
 
     if (p.stateGuard())
     {
         p.changeGuard();
     }
 
-    option = optionMenu();
-
-    do
-    {
-        if (!p.checkStam() && option == 'A')
-        {
-            stream << "Insufficient stamina";
-            printStream(stream);
-            getSingleInput(option);
-        }
-    } while (!p.checkStam() && option == 'A');
-    printLine(40);
-    return option;
-}
-
-/**
- * Gets player decision for their turn
- */
-char optionMenu()
-{
-    ostringstream stream;
-    vector<char> options = {'A', 'G'};
-    char option;
-    stream << "What would you like to do?\n(A)ATTACK\n(G)GUARD\n";
+    stream << "What would you like to do?\n(A)ATTACK\n(G)GUARD\n(U)USE ITEM\n";
     printStream(stream);
-    getSingleInput(option);
-    option = (char)toupper(option);
+
     do
     {
-        if (find(options.begin(), options.end(), option) == options.end())
+        valid = validOption(option, p, stream);
+        if (!valid)
         {
-            stream << "Invalid input\n";
             printStream(stream);
-            getSingleInput(option);
-            option = (char)toupper(option);
         }
-    } while (find(options.begin(), options.end(), option) == options.end());
+    } while (!valid);
+
+    printLine(40);
     return option;
 }
 
@@ -367,28 +435,70 @@ void enemyAttack(player &p, vector<unique_ptr<entity>> &enemies, int turn)
     }
 }
 
+/***
+ *  Option U of Player's turn
+ */
+void itemSelect(player &p)
+{
+    ostringstream stream;
+    int option;
+    int counter = 0;
+    vector<shared_ptr<consumable>> selection;
+    shared_ptr<consumable> chosen;
+
+    for (auto [name, item] : p.getItems())
+    {
+        counter++;
+        stream << "(" << counter << ")" << name << "\n"
+               << "Effect: " << item->getEffect() << "\n"
+               << "Quantity: " << item->getCount() << "\n";
+        selection.push_back(item);
+    }
+    printStream(stream);
+
+    getSingleInput(option);
+
+    do
+    {
+        if (option <= 0 || option > counter)
+        {
+            stream << "Invalid input";
+            printStream(stream);
+            getSingleInput(option);
+        }
+    } while (option <= 0 || option > counter);
+
+    chosen = selection.at(option - 1);
+    stream << "You used a " << chosen->getName() << "!";
+    printStream(stream);
+    p.useItem(chosen->getName());
+}
+
 //// SETUP FUNCTIONS ////
 
-void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies, int combatLevel)
+void populateEnemies(vector<unique_ptr<entity>> &enemies, int maxEnemies, int maxLevel)
 {
-    vector<int> idNums = {1, 1, 1};
     int eType;
-    for (int i = 0; i < numEnemies; i++)
+    int eLevel;
+    vector<int> idNums = {1, 1, 1};
+    int numEnemies = getRandom(maxEnemies - 1);
+    for (int i = 0; i < numEnemies + 1; i++)
     {
-        eType = getRandom(2);
+        eType = getRandom(idNums.size() - 1);
+        eLevel = getRandom(maxLevel);
         switch (eType)
         {
         case 0:
-            enemies.emplace_back(make_unique<knight>(idNums.at(0), combatLevel));
-            idNums.at(0)++;
+            enemies.emplace_back(make_unique<knight>(idNums.at(eType), eLevel));
+            idNums.at(eType)++;
             break;
         case 1:
-            enemies.emplace_back(make_unique<mage>(idNums.at(1), combatLevel));
-            idNums.at(1)++;
+            enemies.emplace_back(make_unique<mage>(idNums.at(eType), eLevel));
+            idNums.at(eType)++;
             break;
         case 2:
-            enemies.emplace_back(make_unique<archer>(idNums.at(2), combatLevel));
-            idNums.at(2)++;
+            enemies.emplace_back(make_unique<archer>(idNums.at(eType), eLevel));
+            idNums.at(eType)++;
             break;
         }
     }
@@ -417,10 +527,10 @@ void equipmentSelect(player &p)
     printLine(40);
     stream << "Select your weapon:\n\n";
 
-    for (auto [name, wep] : p.getInv())
+    for (auto [name, wep] : p.getWeps())
     {
         counter++;
-        stream << "(" << counter << ")" << name << "\n"
+        stream << "(" << counter << ") " << name << "\n"
                << "Damage: " << wep->getDamage() << "\n"
                << "Attacks: ";
         selection.push_back(wep);
@@ -445,5 +555,4 @@ void equipmentSelect(player &p)
     } while (option <= 0 || option > counter);
 
     p.setCurrWeapon(selection.at(option - 1));
-    printLine(40);
 }

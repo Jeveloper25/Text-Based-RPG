@@ -46,6 +46,10 @@ void playerAttack(player &p, vector<unique_ptr<entity>> &enemies, double &totalE
 
 void enemyAttack(player &p, vector<unique_ptr<entity>> &enemies, int turn);
 
+void itemSelect(player &p);
+
+void consumableLoot(player &p, int rolls);
+
 //// SETUP FUNCTIONS ////
 
 void populateEnemies(vector<unique_ptr<entity>> &enemies, int numEnemies, int combatLevel);

@@ -2,9 +2,9 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include "items.h"
 #include "entities.h"
 #include "game.h"
-#include "items.h"
 
 #define PLAYER_TURN 0
 
@@ -18,6 +18,13 @@ using namespace std;
 bool cmp_by_id(const unique_ptr<entity> &a, const unique_ptr<entity> &b)
 {
     return a->getID() < b->getID();
+}
+
+string getStreamStr()
+{
+    ostringstream stream;
+    stream << "number: " << 1;
+    return stream.str();
 }
 
 /*
@@ -41,7 +48,7 @@ int main()
         while (playGame)
         {
             equipmentSelect(*p1);
-            populateEnemies(enemies, 1, combatLevel);
+            populateEnemies(enemies, 3, combatLevel);
             sort(enemies.begin(), enemies.end(), cmp_by_id);
             determineLoot(lootTable, enemies);
             // COMBAT LOOP
@@ -66,6 +73,8 @@ int main()
                         stream << "You ready yourself for the next attack!\n";
                         printStream(stream);
                         break;
+                    case 'U':
+                        itemSelect(*p1);
                     }
                 }
 
@@ -92,8 +101,9 @@ int main()
                 stream << "Current level: " << p1->getLevel() + 1 << "(" << p1->getExp() << " / " << p1->getExpThreshold() << ")";
                 printStream(stream);
                 selectLoot(lootTable, *p1);
-                printLine(40);
+                consumableLoot(*p1, combatLevel + 1);
                 p1->reset();
+                lootTable.clear();
                 totalExp = 0;
                 break;
             // EXIT GAME
