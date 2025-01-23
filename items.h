@@ -20,6 +20,16 @@ public:
         : name{name}, dType{dType}, damageMultiplier{dM}, staminaCost{sC} {}
 };
 
+struct buff
+{
+    bool isActive = true;
+    int duration;
+    string buffType;
+    string bonusType;
+    int flatBonus;
+    double multBonus;
+};
+
 class item
 {
 protected:
@@ -29,6 +39,8 @@ protected:
 public:
     string getName() { return name; }
 };
+
+//// CONSUMBALES ////
 
 /***
  * Only one instance of a given subclass should exist at any given time,
@@ -44,21 +56,33 @@ protected:
 public:
     consumable() { type = "consumable"; }
     virtual int useItem() { return -1; }
+    /***
+     *  Overload is not used in implementation,
+     *  only used for overloading the function.
+     *  By convention, input true.
+     */
+    virtual buff useItem(bool overload)
+    {
+        buff nullBuff;
+        nullBuff.buffType = "NULL";
+        return nullBuff;
+    }
     void addCons() { count++; }
     string getCType() { return cType; }
     virtual string getEffect() { return "l"; }
     int getCount() { return count; }
+    virtual int getDuration() { return -1; }
 };
 
-class potion : public consumable
+class healer : public consumable
 {
 private:
     int healAmount = 40;
 
 public:
-    potion()
+    healer()
     {
-        cType = "Healing";
+        cType = "Heal";
         name = "Health Potion";
     }
     virtual int useItem()
@@ -69,12 +93,67 @@ public:
     string getEffect()
     {
         ostringstream stream;
-        string test;
         stream << "Heals " << healAmount << " HP";
-        test = stream.str();
-        return test;
+        return stream.str();
     }
 };
+
+class buffer : public consumable
+{
+protected:
+    buff appliedBuff;
+
+public:
+    buffer() { cType = "Buffer"; }
+    virtual buff useItem(bool overload)
+    {
+        count--;
+        return appliedBuff;
+    }
+    int getDuration() { return appliedBuff.duration; }
+};
+
+class strengthener : public buffer
+{
+public:
+    strengthener()
+    {
+        name = "Strength Potion";
+        appliedBuff.buffType = "Attack";
+        appliedBuff.bonusType = "Flat";
+        appliedBuff.flatBonus = 20;
+        appliedBuff.duration = 3;
+        appliedBuff.multBonus = 0;
+    }
+    string getEffect()
+    {
+        ostringstream stream;
+        stream << "Raises weapon damage of the next " << appliedBuff.duration << " attacks by" << appliedBuff.flatBonus << " points";
+        return stream.str();
+    }
+};
+
+class defender : public buffer
+{
+public:
+    defender()
+    {
+        name = "Defense Potion";
+        appliedBuff.buffType = "Defense";
+        appliedBuff.bonusType = "Mult";
+        appliedBuff.multBonus = 1.2;
+        appliedBuff.duration = 6;
+        appliedBuff.flatBonus = 0;
+    }
+    string getEffect()
+    {
+        ostringstream stream;
+        stream << "Raises all defences by " << appliedBuff.multBonus << "x for the next " << appliedBuff.duration << " attacks";
+        return stream.str();
+    }
+};
+
+//// WEAPONS ////
 
 class weapon : public item
 {

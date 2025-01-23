@@ -46,6 +46,7 @@ public:
     int getStam() { return stamina; }
     bool checkStam();
     shared_ptr<weapon> getLoot();
+    virtual void useBuff(double &damage) {}
 };
 
 class player : public entity
@@ -57,6 +58,7 @@ private:
     double expThreshold = 100;
     unordered_map<string, shared_ptr<weapon>> weaponInventory;
     unordered_map<string, shared_ptr<consumable>> consInventory;
+    buff currBuff;
 
 public:
     player();
@@ -74,8 +76,12 @@ public:
     unordered_map<string, shared_ptr<consumable>> &getItems() { return consInventory; }
     void setCurrWeapon(shared_ptr<weapon> newWeapon) { currWeapon = newWeapon; }
     void heal(int val) { health += val; }
+    void applyBuff(buff toApply) { currBuff = toApply; }
+    void useBuff(double &damage);
+    double useBuff(double damage);
 };
 
+//// ENEMIES ////
 class knight : public entity
 {
 public:

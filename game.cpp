@@ -214,7 +214,7 @@ void consumableLoot(player &p, int rolls)
 {
     int index;
     ostringstream stream;
-    vector<string> lootTable = {"Health Potion"};
+    vector<string> lootTable = {"Health Potion", "Strength Potion", "Defense Potion"};
     stream << "\n";
     for (int i = 0; i < rolls; i++)
     {
@@ -271,10 +271,18 @@ attack attackTarget(entity &target, entity &attacker)
     attack act = attacker.getAttack();
     int raw = attacker.getRaw();
     double damage = calcDamage(act.damageMultiplier * raw, act.dType, target);
+
     if (attacker.getID() == "P1")
     {
-        damage *= 2;
+        damage *= 20;
+        attacker.useBuff(damage);
     }
+    else if (target.getID() == "P1")
+    {
+        damage *= 20;
+        target.useBuff(damage);
+    }
+
     target.subHealth(damage);
     attacker.changeStam(false, act.staminaCost);
     attack info{act.name, act.dType, damage, 0};
@@ -448,11 +456,19 @@ void itemSelect(player &p)
 
     for (auto [name, item] : p.getItems())
     {
-        counter++;
-        stream << "(" << counter << ")" << name << "\n"
-               << "Effect: " << item->getEffect() << "\n"
-               << "Quantity: " << item->getCount() << "\n";
-        selection.push_back(item);
+        if (item->getCount() > 0)
+        {
+            counter++;
+            stream << "(" << counter << ") " << name << "\n"
+                   << "Effect: " << item->getEffect() << "\n";
+            if (item->getCType() == "Buffer")
+            {
+                stream << "Duration: " << item->getDuration() << "\n";
+            }
+
+            stream << "Quantity: " << item->getCount() << "\n\n";
+            selection.push_back(item);
+        }
     }
     printStream(stream);
 

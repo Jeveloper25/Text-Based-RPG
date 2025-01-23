@@ -87,9 +87,10 @@ player::player()
     baseHealth = health;
     baseStamina = stamina;
     weaponInventory[currWeapon->getName()] = currWeapon;
-    consInventory.emplace("Health Potion", make_shared<potion>());
-    consInventory["Health Potion"]->addCons();
-    consInventory["Health Potion"]->addCons();
+    consInventory.emplace("Health Potion", make_shared<healer>());
+    consInventory.emplace("Strength Potion", make_shared<strengthener>());
+    consInventory.emplace("Defense Potion", make_shared<defender>());
+    currBuff.isActive = false;
 }
 
 void player::changeGuard()
@@ -113,6 +114,8 @@ void player::reset()
     {
         changeGuard();
     }
+    currBuff.isActive = false;
+    alive = true;
 }
 
 double player::getExpThreshold()
@@ -144,7 +147,7 @@ attack player::getAttack()
     {
         stream << "(" << i + 1 << ") " << attacks.at(i).name << "\n"
                << "Type: " << attacks.at(i).dType << "\n"
-               << "Damage: " << attacks.at(i).damageMultiplier * currWeapon->getDamage() * 2 << "\n"
+               << "Damage: " << attacks.at(i).damageMultiplier * currWeapon->getDamage() << "\n"
                << "Stamina Cost: " << attacks.at(i).staminaCost << "\n";
         if (attacks.at(i).staminaCost > stamina)
         {
@@ -199,6 +202,54 @@ void player::useItem(string name)
     {
         health += usedItem.useItem();
     }
+    else if (cType == "Buffer")
+    {
+        applyBuff(usedItem.useItem(true));
+    }
+}
+
+void player::useBuff(double &damage)
+{
+    if (currBuff.isActive)
+    {
+        if (currBuff.buffType == "Attack")
+        {
+            currBuff.bonusType == "Flat" ? damage += currBuff.flatBonus : damage *= currBuff.multBonus;
+            currBuff.duration--;
+        }
+        else if (currBuff.buffType == "Defense")
+        {
+            currBuff.bonusType == "Flat" ? damage -= currBuff.flatBonus : damage *= 2 - currBuff.multBonus;
+            currBuff.duration--;
+        }
+
+        if (currBuff.duration == 0)
+        {
+            currBuff.isActive = false;
+        }
+    }
+}
+
+double player::useBuff(double damage)
+{
+    if (currBuff.isActive)
+    {
+        if (currBuff.buffType == "Attack")
+        {
+            return currBuff.bonusType == "Flat" ? damage += currBuff.flatBonus : damage *= currBuff.multBonus;
+        }
+        else if (currBuff.buffType == "Defense")
+        {
+            return currBuff.bonusType == "Flat" ? damage -= currBuff.flatBonus : damage *= 2 - currBuff.multBonus;
+        }
+        currBuff.duration--;
+
+        if (currBuff.duration == 0)
+        {
+            currBuff.isActive = false;
+        }
+    }
+    return -1;
 }
 
 // KNIGHT SUBCLASS

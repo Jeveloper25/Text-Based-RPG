@@ -20,13 +20,6 @@ bool cmp_by_id(const unique_ptr<entity> &a, const unique_ptr<entity> &b)
     return a->getID() < b->getID();
 }
 
-string getStreamStr()
-{
-    ostringstream stream;
-    stream << "number: " << 1;
-    return stream.str();
-}
-
 /*
     MAIN FUNCTION
 */
@@ -104,6 +97,7 @@ int main()
                 consumableLoot(*p1, combatLevel + 1);
                 p1->reset();
                 lootTable.clear();
+                enemies.clear();
                 totalExp = 0;
                 break;
             // EXIT GAME
